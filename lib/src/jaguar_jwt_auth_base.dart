@@ -17,25 +17,27 @@ part 'password_hasher.dart';
 @InterceptorClass()
 class JwtAuthHeader extends Interceptor {
   /// JWT provider
-  final JwtHelper provider;
+  final JwtInfo info;
 
   /// List of expected audience
   final List<String> audience;
 
-  const JwtAuthHeader(this.provider, this.audience);
+  const JwtAuthHeader(this.info, this.audience);
 
   @InputHeaders()
   JsonWebToken pre(Map<String, String> headers) {
-    String token = headers[provider.tokenName];
+    JwtHelper helper = new JwtHelper(info);
+
+    String token = headers[helper.tokenName];
 
     //Validate token
-    if(!provider.isTokenValid(token, audience)) {
+    if(!helper.isTokenValid(token, audience)) {
       //TODO raise unauth error
       throw new Exception("Auth failed!");
     }
 
     //Decode and provide token
-    return provider.decodeToken(token)
+    return helper.decodeToken(token)
         .claimSet.toJson();
   }
 }
